@@ -10,9 +10,8 @@ namespace Entity
         
         
         [Header("Ground Check")]
-        [SerializeField] Transform groundCheck;      // empty child at the feet
-        [SerializeField] float groundCheckRadius = 0.55f;
-        [SerializeField] LayerMask groundMask;
+        [SerializeField] Collider2D groundCheck;
+        [SerializeField] Collider2D selfCollider;
         
         
         protected Rigidbody2D rb2d;
@@ -23,24 +22,11 @@ namespace Entity
         protected virtual void Awake()
         {
             rb2d = GetComponent<Rigidbody2D>();
-            
-            groundFilter = new ContactFilter2D();
-            groundFilter.useTriggers = false;        // ignore trigger colliders
-            groundFilter.SetLayerMask(groundMask);
         }
         
         public bool IsGrounded()
         {
-            int count = Physics2D.OverlapCircle(
-                groundCheck.position, groundCheckRadius, groundFilter, groundHits);
-
-            for (int i = 0; i < count; i++)
-            {
-                // Skip the player's own collider(s), including child colliders
-                if (groundHits[i].attachedRigidbody == rb2d) continue;
-                return true;
-            }
-            return false;
+            return groundCheck.IsTouching(FindAnyObjectByType<Collider2D>()) && !groundCheck.IsTouching(selfCollider);
         }
         
         public void Move(Vector2 direction)
